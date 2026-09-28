@@ -9,10 +9,11 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 // Middlewares
 import { ipBlockWAF } from "./Middleware/WAF.js";
-import authMiddle from "./Middleware/authMiddle.js"
+// import authMiddle from "./Middleware/authMiddle.js"
 // Routes
 import authRoutes from "./Routes/authRoutes.js";
 import userRoutes from "./Routes/userRoutes.js";
+import securityRoutes from "./Routes/securityRoutes.js"
 
 dotenv.config(); //loads env files and allows safe use process.env.VARIABLE
 
@@ -24,7 +25,8 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173", //frontend origin (localhost)
-      "https://waf-jwt-frontend.vercel.app" //frontend origin 
+      "https://waf-jwt-frontend.vercel.app", //frontend origin 
+      "http://localhost:5174" //Security dashboard origin (localhost)
     ],
     credentials: true
   })
@@ -47,7 +49,9 @@ app.use(cookieParser());
 // Public authentication route
 app.use("/api/auth", authRoutes);
 // Protected user routes witj JWT
-app.use("/api/users", authMiddle, userRoutes);
+// app.use("/api/users", authMiddle, userRoutes);
+// route for security monitor dashboard
+app.use("/api/security",securityRoutes)
 
 // quick health check route
 app.get("/health",(req,res)=>res.json({ok:true}))

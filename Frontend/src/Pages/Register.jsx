@@ -1,49 +1,87 @@
-import React from "react";
+
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, Link } from "react-router-dom";
-import { endpoints } from "../utils/api";
 import axiosPrivate from "../utils/axiosPrivate";
-import { useState } from "react";
+import { endpoints } from "../utils/api";
 
 const Register = () => {
 
   const navigate = useNavigate();
 
+  const [serverError, setserverError] = useState("");
+
   const {
     register: registerField,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: {
+      errors,
+      isSubmitting
+    }
   } = useForm();
 
-  const [serverError, setserverError] = useState("");
-
   const onSubmit = async (data) => {
+
+    setserverError("");
+
     try {
 
-      setserverError("");
+      const response =
+        await axiosPrivate.post(
+          endpoints.register,
+          {
+            name: data.name,
+            email: data.email,
+            password: data.password
+          }
+        );
 
-      const response = await axiosPrivate.post(endpoints.register, {
-        name: data.name,
-        email: data.email,
-        password: data.password,
-      });
+      console.log(
+        "Register Success:",
+        response.data
+      );
 
       navigate("/login");
 
     } catch (error) {
 
-      setserverError(
-        error.response?.data?.message || "Internal server error"
+      console.error(
+        "Error:",
+        error.response?.data
       );
+
+      if (
+        error.response?.status === 403 &&
+        error.response?.data?.blocked
+      ) {
+
+        setserverError(
+          `Blocked by AI WAF (${error.response.data.attackType.toUpperCase()})`
+        );
+
+      }
+
+      else {
+
+        setserverError(
+          error.response?.data?.message ||
+          "Internal server error"
+        );
+
+      }
+
     }
+
   };
 
   return (
+
     <div className="min-h-screen flex items-center justify-center bg-slate-200 px-4">
 
       <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
 
         <div className="text-center">
+
           <h1 className="text-3xl font-bold text-slate-800">
             Register
           </h1>
@@ -51,13 +89,17 @@ const Register = () => {
           <p className="text-gray-500 mt-2 text-sm">
             Create your new account here
           </p>
+
         </div>
 
-        {/* Server Error */}
         {serverError && (
+
           <div className="bg-red-100 text-red-600 text-sm p-3 rounded-md mt-4 text-center">
+
             {serverError}
+
           </div>
+
         )}
 
         <form
@@ -65,7 +107,6 @@ const Register = () => {
           className="mt-6 space-y-5"
         >
 
-          {/* Name */}
           <div>
 
             <label className="text-sm font-medium text-gray-600">
@@ -76,31 +117,11 @@ const Register = () => {
               type="text"
               placeholder="Enter your name"
               className="mt-1 w-full h-11 border border-gray-300 rounded-lg px-3 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
-
-              {...registerField("name", {
-
-                required: {
-                  value: true,
-                  message: "Field can't be empty",
-                },
-
-                pattern: {
-                  value: /^[A-Za-z ]+$/,
-                  message: "Only alphabets are allowed",
-                },
-
-              })}
+              {...registerField("name")}
             />
-
-            {errors.name && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.name.message}
-              </p>
-            )}
 
           </div>
 
-          {/* Email */}
           <div>
 
             <label className="text-sm font-medium text-gray-600">
@@ -111,31 +132,11 @@ const Register = () => {
               type="text"
               placeholder="Enter your email"
               className="mt-1 w-full h-11 border border-gray-300 rounded-lg px-3 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
-
-              {...registerField("email", {
-
-                required: {
-                  value: true,
-                  message: "Field can't be empty",
-                },
-
-                pattern: {
-                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                  message: "Invalid email format",
-                },
-
-              })}
+              {...registerField("email")}
             />
-
-            {errors.email && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.email.message}
-              </p>
-            )}
 
           </div>
 
-          {/* Password */}
           <div>
 
             <label className="text-sm font-medium text-gray-600">
@@ -146,34 +147,8 @@ const Register = () => {
               type="password"
               placeholder="Enter your password"
               className="mt-1 w-full h-11 border border-gray-300 rounded-lg px-3 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
-
-              {...registerField("password", {
-
-                required: {
-                  value: true,
-                  message: "Field can't be empty",
-                },
-
-                minLength: {
-                  value: 8,
-                  message: "Minimum 8 characters required",
-                },
-
-                pattern: {
-                  value:
-                    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-                  message:
-                    "Password must contain uppercase, lowercase, number and special character",
-                },
-
-              })}
+              {...registerField("password")}
             />
-
-            {errors.password && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.password.message}
-              </p>
-            )}
 
           </div>
 
@@ -186,20 +161,26 @@ const Register = () => {
                 : "bg-blue-600 hover:bg-blue-700 text-white"
             }`}
           >
-            {isSubmitting ? "Submitting..." : "Register"}
+
+            {isSubmitting
+              ? "Submitting..."
+              : "Register"}
+
           </button>
 
         </form>
 
         <p className="text-center text-sm text-gray-500 mt-6">
 
-          Already had an account?
+          Already have an account?
 
           <Link
             to="/login"
             className="text-blue-600 ml-2 font-medium hover:underline"
           >
+
             Login here
+
           </Link>
 
         </p>
@@ -207,7 +188,9 @@ const Register = () => {
       </div>
 
     </div>
+
   );
+
 };
 
 export default Register;

@@ -1,136 +1,403 @@
-{
-  "type": "MALICIOUS_PAYLOAD",
-  "ip": "::1",
-  "path": "/api/auth/register",
-  "method": "POST",
-  "snippet": "{\"name\":\"Sohail\",\"email\":\"<script>alert(1)</script>\",\"password\":\"$Hahnaz123\"}",
-  "time": "2025-12-18T04:59:10.689Z"
-}
----
-[2025-12-18T05:32:15.342Z] WAF_STARTED
-[2025-12-18T05:36:11.566Z] WAF_STARTED
-[2025-12-18T06:02:05.950Z] WAF_STARTED
-[2025-12-18T06:05:33.444Z] WAF_STARTED
+[2026-05-25T05:40:31.490Z] WAF_STARTED
 {
   "type": "MALICIOUS_PAYLOAD",
   "ip": "::1",
   "path": "/api/auth/login",
   "method": "POST",
-  "snippet": "{\"email\":\"' OR 1=1 --\",\"password\":\"123\"}",
-  "time": "2025-12-18T06:05:56.935Z"
+  "attackType": "XSS",
+  "riskScore": 50,
+  "severity": "MEDIUM",
+  "reasons": [
+    "Detected script tag"
+  ],
+  "payload": {
+    "body": {
+      "email": "<script>alert(1)</script>@gmail.com",
+      "password": ""
+    },
+    "query": {}
+  },
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+  "time": "2026-05-25T05:43:08.005Z"
 }
 ---
+[2026-06-22T05:27:52.435Z] WAF_STARTED
+[2026-06-22T05:30:43.372Z] WAF_STARTED
+[2026-06-22T05:32:10.765Z] WAF_STARTED
+[2026-06-22T05:33:02.945Z] WAF_STARTED
 {
-  "type": "DYNAMIC_BLOCK_ENFORCE",
+  "type": "AI_DETECTED_ATTACK",
   "ip": "::1",
   "path": "/api/auth/login",
   "method": "POST",
-  "expiresAt": "2025-12-18T06:06:56.935Z",
-  "time": "2025-12-18T06:06:02.269Z"
+  "attackType": "xss",
+  "confidence": 0.9630823861219566,
+  "payload": {
+    "body": {
+      "email": "<script>alert(1)</script>@gmail.com",
+      "password": ""
+    },
+    "query": {}
+  },
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
+  "time": "2026-06-22T05:33:08.834Z"
 }
 ---
 {
-  "type": "MALICIOUS_PAYLOAD",
+  "type": "AI_DETECTED_ATTACK",
   "ip": "::1",
   "path": "/api/auth/login",
   "method": "POST",
-  "snippet": "{\"email\":\"' OR 1=1 --\",\"password\":\"12345678\"}",
-  "time": "2025-12-18T06:07:46.509Z"
+  "attackType": "sqli",
+  "confidence": 0.9188915501854096,
+  "payload": {
+    "body": {
+      "email": "' OR 1=1 --",
+      "password": ""
+    },
+    "query": {}
+  },
+  "userAgent": "Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Mobile Safari/537.36",
+  "time": "2026-06-22T05:38:55.936Z"
 }
 ---
+[2026-06-22T05:41:54.479Z] WAF_STARTED
 {
-  "type": "DYNAMIC_BLOCK_ENFORCE",
+  "type": "AI_DETECTED_ATTACK",
+  "timestamp": "2026-06-22T05:42:22.444Z",
   "ip": "::1",
   "path": "/api/auth/login",
   "method": "POST",
-  "expiresAt": "2025-12-18T06:08:46.510Z",
-  "time": "2025-12-18T06:08:09.290Z"
+  "attackType": "sqli",
+  "confidence": 0.9188915501854096,
+  "severity": "MEDIUM",
+  "detectionEngine": "TF-IDF + Logistic Regression",
+  "payload": {
+    "body": {
+      "email": "' OR 1=1 --",
+      "password": ""
+    },
+    "query": {}
+  },
+  "userAgent": "Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Mobile Safari/537.36",
+  "time": "2026-06-22T05:42:22.444Z"
 }
 ---
+[2026-06-22T06:25:03.036Z] WAF_STARTED
 {
-  "type": "DYNAMIC_BLOCK_ENFORCE",
+  "type": "AI_DETECTED_ATTACK",
+  "timestamp": "2026-06-22T06:25:59.143Z",
   "ip": "::1",
   "path": "/api/auth/login",
   "method": "POST",
-  "expiresAt": "2025-12-18T06:08:46.510Z",
-  "time": "2025-12-18T06:08:11.395Z"
+  "attackType": "sqli",
+  "confidence": 0.9188915501854096,
+  "explanation": "The payload was classified as SQL Injection because it contains SQL-related patterns such as OR, password, body, email, query. These terms are commonly associated with database manipulation and unauthorized data access attempts.",
+  "severity": "MEDIUM",
+  "detectionEngine": "TF-IDF + Logistic Regression",
+  "payload": {
+    "body": {
+      "email": "' OR 1=1 --",
+      "password": ""
+    },
+    "query": {}
+  },
+  "userAgent": "Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Mobile Safari/537.36",
+  "time": "2026-06-22T06:25:59.143Z"
 }
 ---
+[2026-06-22T06:27:39.596Z] WAF_STARTED
 {
-  "type": "DYNAMIC_BLOCK_ENFORCE",
+  "type": "AI_DETECTED_ATTACK",
+  "timestamp": "2026-06-22T06:27:56.288Z",
   "ip": "::1",
   "path": "/api/auth/login",
   "method": "POST",
-  "expiresAt": "2025-12-18T06:08:46.510Z",
-  "time": "2025-12-18T06:08:27.707Z"
+  "attackType": "sqli",
+  "confidence": 0.9999976123774128,
+  "explanation": "The payload was classified as SQL Injection because it contains SQL-related patterns such as OR, 1. These terms are commonly associated with database manipulation and unauthorized data access attempts.",
+  "severity": "HIGH",
+  "detectionEngine": "TF-IDF + Logistic Regression",
+  "payload": {
+    "body": {
+      "email": "' OR 1=1 --",
+      "password": ""
+    },
+    "query": {}
+  },
+  "userAgent": "Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Mobile Safari/537.36",
+  "time": "2026-06-22T06:27:56.288Z"
 }
 ---
-[2025-12-18T06:11:15.514Z] WAF_STARTED
-{
-  "type": "MALICIOUS_PAYLOAD",
-  "ip": "::1",
-  "path": "/api/auth/login",
-  "method": "POST",
-  "snippet": "{\"email\":\"' OR 1=1 --\",\"password\":\"12354567\"}",
-  "time": "2025-12-18T06:11:32.270Z"
-}
----
-[2025-12-18T06:13:05.114Z] WAF_STARTED
-[2025-12-18T06:47:55.127Z] WAF_STARTED
-[2025-12-18T06:55:07.206Z] WAF_STARTED
-[2025-12-18T06:56:04.262Z] WAF_STARTED
-{
-  "type": "MALICIOUS_PAYLOAD",
-  "ip": "::1",
-  "path": "/api/auth/login",
-  "method": "POST",
-  "snippet": "{\"email\":\"' OR 1=1 --\",\"password\":\"12345678\"}",
-  "time": "2025-12-18T06:56:07.342Z"
-}
----
-[2025-12-18T07:01:05.175Z] WAF_STARTED
-[2025-12-22T15:57:31.966Z] WAF_STARTED
-[2025-12-22T16:11:39.229Z] WAF_STARTED
-[2025-12-22T16:11:49.072Z] WAF_STARTED
-
-{
-  "type": "MALICIOUS_PAYLOAD",
-  "ip": "::1",
-  "path": "/api/auth/login",
-  "method": "POST",
-  "snippet": "{\"email\":\"' OR 1=1 --\",\"password\":\"\"}",
-  "time": "2025-12-22T16:11:55.226Z"
-}
-
----
-[2026-03-04T06:31:14.719Z] WAF_STARTED
+[2026-06-22T06:54:33.721Z] WAF_STARTED
 {
   "type": "RATE_LIMIT",
   "ip": "::1",
-  "path": "/api/users/me",
+  "path": "/api/logs",
   "method": "GET",
-  "expiresAt": "2026-03-04T06:33:40.623Z",
-  "time": "2026-03-04T06:32:40.624Z"
+  "expiresAt": "2026-06-22T06:55:38.868Z",
+  "time": "2026-06-22T06:54:38.869Z"
 }
 ---
 {
-  "type": "DYNAMIC_BLOCK_ENFORCE",
+  "type": "RATE_LIMIT",
   "ip": "::1",
-  "path": "/api/users/me",
+  "path": "/api/logs",
   "method": "GET",
-  "expiresAt": "2026-03-04T06:33:40.623Z",
-  "time": "2026-03-04T06:32:40.628Z"
+  "expiresAt": "2026-06-22T06:57:38.408Z",
+  "time": "2026-06-22T06:56:38.409Z"
 }
 ---
-[2026-03-04T17:38:10.076Z] WAF_STARTED
 {
-  "type": "MALICIOUS_PAYLOAD",
+  "type": "RATE_LIMIT",
+  "ip": "::1",
+  "path": "/api/logs",
+  "method": "GET",
+  "expiresAt": "2026-06-22T06:57:42.115Z",
+  "time": "2026-06-22T06:56:42.116Z"
+}
+---
+{
+  "type": "RATE_LIMIT",
+  "ip": "::1",
+  "path": "/api/logs",
+  "method": "GET",
+  "expiresAt": "2026-06-22T06:57:42.119Z",
+  "time": "2026-06-22T06:56:42.119Z"
+}
+---
+[2026-06-24T04:57:49.535Z] WAF_STARTED
+{
+  "type": "AI_DETECTED_ATTACK",
+  "timestamp": "2026-06-24T04:59:37.653Z",
   "ip": "::1",
   "path": "/api/auth/login",
   "method": "POST",
-  "snippet": "{\"email\":\"' OR 1=1 --\",\"password\":\"\"}",
-  "time": "2026-03-04T17:39:24.161Z"
+  "attackType": "xss",
+  "confidence": 0.9976783177114266,
+  "explanation": "The payload was classified as Cross-Site Scripting (XSS) because it contains script-related patterns such as alert, script, 1. These patterns are commonly used to inject malicious client-side code.",
+  "severity": "HIGH",
+  "detectionEngine": "TF-IDF + Logistic Regression",
+  "payload": {
+    "body": {
+      "email": "\"/><script>alert(1)</script>",
+      "password": ""
+    },
+    "query": {}
+  },
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
+  "time": "2026-06-24T04:59:37.654Z"
 }
 ---
-[2026-05-19T14:04:57.994Z] WAF_STARTED
-[2026-05-19T14:25:20.033Z] WAF_STARTED
+{
+  "type": "AI_DETECTED_ATTACK",
+  "timestamp": "2026-06-24T04:59:59.687Z",
+  "ip": "::1",
+  "path": "/api/auth/login",
+  "method": "POST",
+  "attackType": "xss",
+  "confidence": 0.9976783177114266,
+  "explanation": "The payload was classified as Cross-Site Scripting (XSS) because it contains script-related patterns such as alert, script, 1. These patterns are commonly used to inject malicious client-side code.",
+  "severity": "HIGH",
+  "detectionEngine": "TF-IDF + Logistic Regression",
+  "payload": {
+    "body": {
+      "email": "\"/><script>alert(1)</script>",
+      "password": ""
+    },
+    "query": {}
+  },
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
+  "time": "2026-06-24T04:59:59.687Z"
+}
+---
+[2026-06-24T05:05:12.493Z] WAF_STARTED
+{
+  "type": "AI_DETECTED_ATTACK",
+  "timestamp": "2026-06-24T05:05:22.057Z",
+  "ip": "::1",
+  "path": "/api/auth/login",
+  "method": "POST",
+  "attackType": "xss",
+  "confidence": 0.9976783177114266,
+  "explanation": "The payload was classified as Cross-Site Scripting (XSS) because it contains script-related patterns such as alert, script, 1. These patterns are commonly used to inject malicious client-side code.",
+  "severity": "HIGH",
+  "detectionEngine": "TF-IDF + Logistic Regression",
+  "payload": {
+    "body": {
+      "email": "\"/><script>alert(1)</script>",
+      "password": ""
+    },
+    "query": {}
+  },
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
+  "time": "2026-06-24T05:05:22.057Z"
+}
+---
+[2026-06-24T05:06:17.772Z] WAF_STARTED
+{
+  "type": "AI_DETECTED_ATTACK",
+  "timestamp": "2026-06-24T05:06:29.570Z",
+  "ip": "::1",
+  "path": "/api/auth/login",
+  "method": "POST",
+  "attackType": "xss",
+  "confidence": 0.9976783177114266,
+  "explanation": "The payload was classified as Cross-Site Scripting (XSS) because it contains script-related patterns such as alert, script, 1. These patterns are commonly used to inject malicious client-side code.",
+  "severity": "HIGH",
+  "detectionEngine": "TF-IDF + Logistic Regression",
+  "payload": {
+    "body": {
+      "email": "\"/><script>alert(1)</script>",
+      "password": ""
+    },
+    "query": {}
+  },
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
+  "time": "2026-06-24T05:06:29.570Z"
+}
+---
+{
+  "type": "AI_DETECTED_ATTACK",
+  "timestamp": "2026-06-24T05:07:21.176Z",
+  "ip": "::1",
+  "path": "/api/auth/login",
+  "method": "POST",
+  "attackType": "sqli",
+  "confidence": 0.9999976123774128,
+  "explanation": "The payload was classified as SQL Injection because it contains SQL-related patterns such as OR, 1. These terms are commonly associated with database manipulation and unauthorized data access attempts.",
+  "severity": "HIGH",
+  "detectionEngine": "TF-IDF + Logistic Regression",
+  "payload": {
+    "body": {
+      "email": "' OR 1=1 --",
+      "password": ""
+    },
+    "query": {}
+  },
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
+  "time": "2026-06-24T05:07:21.176Z"
+}
+---
+[2026-06-24T05:08:10.299Z] WAF_STARTED
+[2026-06-24T05:09:11.523Z] WAF_STARTED
+[2026-06-24T05:09:34.394Z] WAF_STARTED
+[2026-06-24T05:15:50.655Z] WAF_STARTED
+[2026-06-24T05:21:14.711Z] WAF_STARTED
+[2026-06-24T05:23:24.698Z] WAF_STARTED
+[2026-06-24T05:25:25.961Z] WAF_STARTED
+[2026-06-24T05:34:51.482Z] WAF_STARTED
+[2026-06-24T05:36:08.542Z] WAF_STARTED
+{
+  "type": "AI_DETECTED_ATTACK",
+  "timestamp": "2026-06-24T05:36:40.631Z",
+  "ip": "::1",
+  "path": "/api/auth/login",
+  "method": "POST",
+  "attackType": "sqli",
+  "confidence": 0.9999976123774128,
+  "explanation": "The payload was classified as SQL Injection because it contains SQL-related patterns such as OR, 1. These terms are commonly associated with database manipulation and unauthorized data access attempts.",
+  "severity": "HIGH",
+  "detectionEngine": "TF-IDF + Logistic Regression",
+  "payload": {
+    "body": {
+      "email": "' OR 1=1 --",
+      "password": ""
+    },
+    "query": {}
+  },
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
+  "time": "2026-06-24T05:36:40.632Z"
+}
+---
+{
+  "type": "AI_DETECTED_ATTACK",
+  "timestamp": "2026-06-24T05:41:10.948Z",
+  "ip": "::1",
+  "path": "/api/auth/login",
+  "method": "POST",
+  "attackType": "sqli",
+  "confidence": 0.9999976123774128,
+  "explanation": "The payload was classified as SQL Injection because it contains SQL-related patterns such as OR, 1. These terms are commonly associated with database manipulation and unauthorized data access attempts.",
+  "severity": "HIGH",
+  "detectionEngine": "TF-IDF + Logistic Regression",
+  "payload": {
+    "body": {
+      "email": "' OR 1=1 --",
+      "password": ""
+    },
+    "query": {}
+  },
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
+  "time": "2026-06-24T05:41:10.948Z"
+}
+---
+[2026-06-24T05:41:53.968Z] WAF_STARTED
+[2026-06-24T05:42:16.154Z] WAF_STARTED
+{
+  "type": "AI_DETECTED_ATTACK",
+  "timestamp": "2026-06-24T05:42:50.127Z",
+  "ip": "::1",
+  "path": "/api/auth/login",
+  "method": "POST",
+  "attackType": "sqli",
+  "confidence": 0.9999976123774128,
+  "explanation": "The payload was classified as SQL Injection because it contains SQL-related patterns such as OR, 1. These terms are commonly associated with database manipulation and unauthorized data access attempts.",
+  "severity": "HIGH",
+  "detectionEngine": "TF-IDF + Logistic Regression",
+  "payload": {
+    "body": {
+      "email": "' OR 1=1 --",
+      "password": ""
+    },
+    "query": {}
+  },
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
+  "time": "2026-06-24T05:42:50.127Z"
+}
+---
+{
+  "type": "AI_DETECTED_ATTACK",
+  "timestamp": "2026-06-24T05:43:15.773Z",
+  "ip": "::1",
+  "path": "/api/auth/login",
+  "method": "POST",
+  "attackType": "sqli",
+  "confidence": 0.9999976123774128,
+  "explanation": "The payload was classified as SQL Injection because it contains SQL-related patterns such as OR, 1. These terms are commonly associated with database manipulation and unauthorized data access attempts.",
+  "severity": "HIGH",
+  "detectionEngine": "TF-IDF + Logistic Regression",
+  "payload": {
+    "body": {
+      "email": "' OR 1=1 --",
+      "password": ""
+    },
+    "query": {}
+  },
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
+  "time": "2026-06-24T05:43:15.773Z"
+}
+---
+[2026-06-24T07:03:02.402Z] WAF_STARTED
+{
+  "type": "AI_DETECTED_ATTACK",
+  "timestamp": "2026-06-24T07:04:19.019Z",
+  "ip": "::1",
+  "path": "/api/auth/login",
+  "method": "POST",
+  "attackType": "sqli",
+  "confidence": 0.9999976123774128,
+  "explanation": "The payload was classified as SQL Injection because it contains SQL-related patterns such as OR, 1. These terms are commonly associated with database manipulation and unauthorized data access attempts.",
+  "severity": "HIGH",
+  "detectionEngine": "TF-IDF + Logistic Regression",
+  "payload": {
+    "body": {
+      "email": "' OR 1=1 --",
+      "password": ""
+    },
+    "query": {}
+  },
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
+  "time": "2026-06-24T07:04:19.020Z"
+}
+---

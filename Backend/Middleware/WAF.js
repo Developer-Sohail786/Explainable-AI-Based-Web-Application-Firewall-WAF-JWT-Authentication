@@ -1,10 +1,53 @@
 // Block 5:
 
 import rateLimit from "express-rate-limit";
-import querystring from "querystring";
+
 
 import path from "path";
 import fs from "fs";
+
+import { spawnSync } from "child_process";
+
+function predictAttack(payload) {
+
+  try {
+
+    const result = spawnSync(
+      "py",
+      [
+        "../ML/predict_explain.py",
+        payload
+      ],
+      {
+        encoding: "utf-8"
+      }
+    );
+    console.log("STDOUT:", result.stdout);
+    console.log("STDERR:", result.stderr);
+
+    const output = result.stdout.trim();
+
+    const [
+      prediction,
+      confidence,
+      explanation
+    ] = output.split("|");
+
+    return {
+      prediction,
+      confidence: Number(confidence),
+      explanation
+    };
+
+  } catch (error) {
+
+    return {
+      prediction: "error",
+      confidence: 0
+    };
+  }
+}
+
 
 // create initial log entry so file always exists
 try {
@@ -95,34 +138,161 @@ const XSS_PATTERNS = [
 
 function looksMalicious(body = {}, query = {}, headers = {}) {
   try {
-    const combined = normalize(JSON.stringify({ body, query }));
 
-    // Path Traversal detection
-    const pathTraversal =
-      /(\.\.\/|%2F\.\.|%2F%2E%2E|%2F%2E|\.%2F|%2E%2E|\\\.\\)/i;
-    if (pathTraversal.test(combined)) {
-      return true;
+    const combined = normalize(
+      JSON.stringify({ body, query })
+    )
+
+    let riskScore = 0;
+
+    let reasons = []
+
+    let attackType = "Unknown"
+
+    // SQL Injection Detection
+
+    const sqlPatterns = [
+
+      {
+        regex: /union\s+select/i,
+        score: 40,
+        reason: "Detected UNION SELECT pattern"
+      },
+
+      {
+        regex: /or\s+1\s*=\s*1/i,
+        score: 35,
+        reason: "Detected OR 1=1 SQL bypass"
+      },
+
+      {
+        regex: /drop\s+table/i,
+        score: 50,
+        reason: "Detected DROP TABLE command"
+      },
+
+      {
+        regex: /insert\s+into/i,
+        score: 30,
+        reason: "Detected INSERT INTO query"
+      },
+
+      {
+        regex: /update\s+.*set/i,
+        score: 30,
+        reason: "Detected UPDATE SET query"
+      }
+
+    ];
+
+    for (const item of sqlPatterns) {
+      if (item.regex.test(combined)) {
+        riskScore += item.score
+
+        reasons.push(item.reason)
+
+        attackType = "SQL Injection"
+      }
     }
-    // Double encoded attacks
-    const doubleEncoded = /(%252E%25)/i; 
-if (doubleEncoded.test(combined)) return true;
 
-    for (const r of SQLI_PATTERNS) if (r.test(combined)) return true;
-    for (const r of XSS_PATTERNS) if (r.test(combined)) return true;
-    // also checking query string raw
-    try {
-      const queryString = normalize(querystring.stringify(query));
-      for (const r of [...SQLI_PATTERNS, ...XSS_PATTERNS])
-        if (r.test(queryString)) return true;
-    } catch {}
-    // suspicious UA:(bot attacks)
-    const ua = normalize(headers["user-agent"] || "");
-    if (!ua || ua.length < 8) return true;
+    // XSS Detection
+    const xssPatterns = [
 
-    return false;
-  } catch (e) {
-    // if inspection fails, treat as malicious
-    return true;
+      {
+        regex: /<script\b/i,
+        score: 50,
+        reason: "Detected script tag"
+      },
+
+      {
+        regex: /javascript:/i,
+        score: 40,
+        reason: "Detected javascript payload"
+      },
+
+      {
+        regex: /onerror\s*=/i,
+        score: 35,
+        reason: "Detected onerror event"
+      },
+
+      {
+        regex: /<iframe\b/i,
+        score: 30,
+        reason: "Detected iframe injection"
+      }
+
+    ];
+
+    for (const item of xssPatterns) {
+
+      if (item.regex.test(combined)) {
+
+        riskScore += item.score;
+
+        reasons.push(item.reason);
+
+        attackType = "XSS";
+      }
+    }
+
+    // Path Traversal Detection
+
+    const pathTraversalPatterns = [
+
+      {
+        regex: /(\.\.\/|%2E%2E|\\\.\.\\)/i,
+        score: 45,
+        reason: "Detected path traversal attempt"
+      }
+
+    ];
+
+    for (const item of pathTraversalPatterns) {
+
+      if (item.regex.test(combined)) {
+
+        riskScore += item.score;
+
+        reasons.push(item.reason);
+
+        attackType = "Path Traversal";
+      }
+    }
+
+    // Suspicious user-agent
+
+    const userAgent = normalize(headers["user-agent"] || "")
+
+    if (!userAgent || userAgent.length < 8) {
+      riskScore += 20
+      reasons.push("Suspicious user-agent detected")
+    }
+
+    // Severity classification
+
+    let severity = "LOW"
+
+    if (riskScore >= 70) {
+      severity = "HIGH"
+    } else if (riskScore >= 40) {
+      severity = "MEDIUM"
+    }
+    return {
+      malicious: riskScore > 0,
+      riskScore,
+      severity,
+      attackType,
+      reasons
+    }
+  } catch (error) {
+    return {
+      malicious: true,
+      riskScore: 100,
+      severity: "HIGH",
+      attackType: "Unknown",
+      reasons: ["Threat analysis engine failed"]
+    }
   }
 }
 
@@ -184,7 +354,7 @@ const limiter = rateLimit({
       if (!res.headersSent) {
         try {
           res.status(500).json({ ok: false, reason: "waf_error" });
-        } catch (_) {}
+        } catch (_) { }
       }
     }
   },
@@ -207,25 +377,28 @@ export function clearDynamicBlocked() {
 
 export function ipBlockWAF(req, res, next) {
   try {
+    if (req.path.startsWith("/api/security")) {
+      return next();
+    }
     const blockedIps = new Set(CONFIG.staticBlockedIps || []);
     const ip = req.ip || req.connection?.remoteAddress || "unknown";
     console.log(`[WAF-Block1] Incoming  ${req.method}  ${req.path} from ${ip}`);
 
     // ===== BLOCK 5 (early) : dynamic temporary blocklist check =====
     const now = Date.now();
-    const expires = dynamicBlocked.get(ip);
-    if (expires && expires > now) {
-      logEvent({
-        type: "DYNAMIC_BLOCK_ENFORCE",
-        ip,
-        path: req.path,
-        method: req.method,
-        expiresAt: new Date(expires).toISOString(),
-      });
-      return res.status(403).json({ ok: false, reason: "ip_blocked" });
-    } else if (expires) {
-      dynamicBlocked.delete(ip);
-    }
+    // const expires = dynamicBlocked.get(ip);
+    // if (expires && expires > now) {
+    //   logEvent({
+    //     type: "DYNAMIC_BLOCK_ENFORCE",
+    //     ip,
+    //     path: req.path,
+    //     method: req.method,
+    //     expiresAt: new Date(expires).toISOString(),
+    //   });
+    //   return res.status(403).json({ ok: false, reason: "ip_blocked" });
+    // } else if (expires) {
+    //   dynamicBlocked.delete(ip);
+    // }
 
     // BLOCK 1: static blocklist
     if (blockedIps.has(ip)) {
@@ -275,20 +448,89 @@ export function ipBlockWAF(req, res, next) {
       (req.body && Object.keys(req.body).length > 0) ||
       (req.query && Object.keys(req.query).length > 0)
     ) {
-      if (looksMalicious(req.body, req.query, req.headers)) {
-        const snippet = JSON.stringify(req.body || req.query).slice(0, 250);
-        logEvent({
-          type: "MALICIOUS_PAYLOAD",
-          ip,
-          path: req.path,
-          method: req.method,
-          snippet,
-        });
+
+     const payload = [
+  ...Object.values(req.body || {}),
+  ...Object.values(req.query || {})
+].join(" ");
+
+      console.log("AI WAF CHECKING REQUEST...");
+      console.log(payload);
+      const aiResult = predictAttack(payload);
+      console.log(aiResult);
+
+      const attackType = aiResult.prediction;
+      const confidence = aiResult.confidence;
+      const explanation = aiResult.explanation;
+
+      // Block only if confidence is high enough
+      if (
+        attackType !== "normal" &&
+        confidence >= 0.70
+      ) {
+
         dynamicBlocked.set(
           ip,
-          Date.now() + (CONFIG.rateLimit.dynamicBlockMs || 60 * 1000)
+          Date.now() + (
+            CONFIG.rateLimit.dynamicBlockMs || 60 * 1000
+          )
         );
-        return res.status(403).json({ ok: false, reason: "malicious_payload" });
+
+        logEvent({
+
+          type: "AI_DETECTED_ATTACK",
+
+          timestamp: new Date().toISOString(),
+
+          ip,
+
+          path: req.path,
+
+          method: req.method,
+
+          attackType,
+
+          confidence,
+
+          explanation,
+
+          severity:
+            confidence >= 0.95
+              ? "HIGH"
+              : confidence >= 0.80
+                ? "MEDIUM"
+                : "LOW",
+
+          detectionEngine: "TF-IDF + Logistic Regression",
+
+          payload: {
+
+            body: req.body,
+
+            query: req.query
+
+          },
+
+          userAgent: req.headers["user-agent"]
+
+        });
+
+        return res.status(403).json({
+
+          ok: false,
+
+          blocked: true,
+
+          attackType,
+
+          confidence,
+
+          explanation,
+
+          detectionEngine: "AI"
+
+        });
+
       }
     }
 

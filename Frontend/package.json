@@ -11,7 +11,7 @@
     "tw-watch": "node_modules\\.bin\\tailwindcss -i ./src/index.css -o ./src/output.css --watch"
   },
   "dependencies": {
-    "axios": "^1.13.2",
+    "axios": "^1.18.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-hook-form": "^7.65.0",

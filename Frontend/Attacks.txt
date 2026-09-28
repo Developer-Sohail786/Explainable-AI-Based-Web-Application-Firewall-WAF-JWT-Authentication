@@ -1,5 +1,7 @@
 Types of Attakcs to perform
 
+<script>alert(1)</script>@gmail.com
+
 1.SQL INJECTION
 
 a. ' OR 1=1 --

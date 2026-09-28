@@ -1,10 +1,12 @@
+
 import React from "react";
 import { createBrowserRouter, Outlet } from "react-router-dom";
+
 import Register from "./Pages/Register";
 import Login from "./Pages/Login";
 import Dashboard from "./Pages/Dashboard";
 import Portfolio from "./Pages/Portfolio";
-import RequireAuth from "./Components/RequireAuth";
+
 import "./App.css";
 
 function App() {
@@ -14,10 +16,10 @@ function App() {
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />, //using app as root layout wraper
+    element: <App />,
     children: [
       {
-        index: true, //default route '/'
+        index: true,
         element: <Login />,
       },
       {
@@ -29,17 +31,12 @@ export const router = createBrowserRouter([
         element: <Register />,
       },
       {
-        element: <RequireAuth />,
-        children: [
-          {
-            path: "dashboard",
-            element: <Dashboard />,
-          },
-          {
-            path: "portfolio",
-            element: <Portfolio />,
-          },
-        ],
+        path: "dashboard",
+        element: <Dashboard />,
+      },
+      {
+        path: "portfolio",
+        element: <Portfolio />,
       },
     ],
   },

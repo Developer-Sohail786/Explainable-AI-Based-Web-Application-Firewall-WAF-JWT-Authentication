@@ -13,27 +13,98 @@ const Login = () => {
     setError,
     formState: { errors, isSubmitting },
   } = useForm();
+  // const onSubmit = async (data) => {
+  //   setserverError("");
+  //   try {
+  //     const response = await axiosPrivate.post(endpoints.login, {
+  //       email: data.email,
+  //       password: data.password,
+  //     });
+
+  //     navigate("/dashboard");
+  //   } catch (error) {
+  //     console.error("Error:", error.response?.data);
+  //     if (error.response?.status === 404) {
+  //       setserverError("User Not found. Registr first.");
+  //     } else if (error.response?.status === 401) {
+  //       setserverError("Incorrect password. Try again");
+  //     } else {
+  //       setserverError("Internal server error");
+  //     }
+  //   }
+  // };
+
   const onSubmit = async (data) => {
-    setserverError("");
-    try {
-      const response = await axiosPrivate.post(endpoints.login, {
+
+  setserverError("");
+
+  try {
+
+    const response = await axiosPrivate.post(
+      endpoints.login,
+      {
         email: data.email,
         password: data.password,
-      });
-
-      navigate("/dashboard");
-    } catch (error) {
-      console.error("Error:", error.response?.data);
-      if (error.response?.status === 404) {
-        setserverError("User Not found. Registr first.");
-      } else if (error.response?.status === 401) {
-        setserverError("Incorrect password. Try again");
-      } else {
-        setserverError("Internal server error");
       }
+    );
+
+    console.log(response.data);
+
+    navigate("/dashboard");
+
+  } catch (error) {
+
+    console.error(
+      "Error:",
+      error.response?.data
+    );
+
+    // AI WAF Block
+    if (
+      error.response?.status === 403 &&
+      error.response?.data?.blocked
+    ) {
+
+      setserverError(
+        `Blocked by AI WAF (${error.response.data.attackType.toUpperCase()})`
+      );
+
     }
-  };
-return (
+
+    // Normal errors
+
+    else if (
+      error.response?.status === 404
+    ) {
+
+      setserverError(
+        "User not found."
+      );
+
+    }
+
+    else if (
+      error.response?.status === 401
+    ) {
+
+      setserverError(
+        "Incorrect password."
+      );
+
+    }
+
+    else {
+
+      setserverError(
+        "Internal server error."
+      );
+
+    }
+
+  }
+
+};
+  return (
 
   <div className="min-h-screen flex items-center justify-center bg-slate-200 px-4">
     <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
@@ -62,10 +133,10 @@ return (
             placeholder="Enter your email"
             {...register("email", {
               required: { value: true, message: "Field can't be empty" },
-               pattern: {
-                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                  message: "Invalid email format",
-                },
+              //  pattern: {
+              //     value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+              //     message: "Invalid email format",
+              //   },
             })}
           />
           {errors.email && (
@@ -81,20 +152,7 @@ return (
             className="mt-1 w-full h-11 border border-gray-300 rounded-lg px-3 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
             type="password"
             placeholder="Enter your password"
-            {...register("password", {
-              required: { value: false, message: "Field can't be empty" },
-               minLength: {
-                  value: 8,
-                  message: "Minimum 8 characters required",
-                },
-
-                pattern: {
-                  value:
-                    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-                  message:
-                    "Password must contain uppercase, lowercase, number and special character",
-                },
-            })}
+        {...register("password")}
           />
           {errors.password && (
             <p className="text-red-500 text-sm mt-1">
