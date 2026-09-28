@@ -1,15 +1,13 @@
 # Web Application Firewall (WAF) + JWT Authentication
 
-Detect and block malicious requests (SQL injection, XSS, abuse) using a custom Web Application Firewall integrated with JWT authentication.
-
----
+A security-focused full-stack application that combines a custom Web Application Firewall (WAF), machine-learning-based attack detection, JWT authentication, rate limiting, IP blocking, and security monitoring.
 
 ## Live Demo
 
-Frontend  
+**Frontend:**  
 https://waf-jwt-frontend.vercel.app
 
-Backend API  
+**Backend API:**  
 https://waf-jwt.onrender.com
 
 ---
@@ -18,84 +16,217 @@ https://waf-jwt.onrender.com
 
 This project implements a custom **Web Application Firewall (WAF)** that inspects incoming HTTP requests before they reach application routes.
 
-Malicious or suspicious requests are blocked automatically and the source IP can be temporarily added to a dynamic block list.
+The system analyzes request payloads, query parameters, headers, and other request data to identify potentially malicious activity.
 
-The system also includes **JWT authentication**, protected routes, and token refresh handling.
+Detected threats can be blocked automatically, logged for analysis, and associated with a temporary dynamic IP block.
+
+The project also includes a JWT-based authentication system with access tokens, refresh tokens, protected routes, and automatic token refresh.
 
 ---
 
 ## Architecture
-User
-↓
-React Frontend (Vercel)
-↓
-Express Server (Render)
-↓
-Custom WAF Middleware
-↓
-JWT Authentication
-↓
-MongoDB Atlas
 
+```text
+User
+ │
+ ▼
+React + Vite Frontend
+ │
+ │ HTTP Requests
+ ▼
+Express.js Backend
+ │
+ ▼
+Custom WAF Middleware
+ │
+ ├── Request Validation
+ ├── SQL Injection Detection
+ ├── XSS Detection
+ ├── Path Traversal Detection
+ ├── Suspicious User-Agent Detection
+ ├── ML-Based Attack Detection
+ ├── Rate Limiting
+ └── Dynamic IP Blocking
+ │
+ ▼
+JWT Authentication
+ │
+ ▼
+MongoDB Atlas
+```
 
 ---
 
 ## Features
 
-### Security (WAF)
+### 🛡️ Web Application Firewall
 
 - SQL Injection detection
 - XSS detection
-- Path traversal protection
-- Suspicious user-agent detection
+- Path Traversal protection
+- Suspicious User-Agent detection
 - Request payload inspection
+- Query parameter inspection
+- Request content-type validation
 - Dynamic IP blocking
 - Rate limiting
-- Security logging
+- Security event logging
+- Threat severity classification
 
-### Authentication
+### 🤖 Machine Learning Threat Detection
 
-- JWT access tokens
-- Refresh token system
-- Protected API routes
-- Automatic token refresh using Axios interceptors
+The WAF uses a machine-learning pipeline to classify suspicious request payloads.
 
-### Backend
+The detection pipeline uses:
 
-- Express REST API
-- Middleware-based WAF filtering
-- MongoDB user storage
-- Helmet security headers
-- CORS protection
+- TF-IDF feature extraction
+- Logistic Regression classification
+- Confidence-based attack blocking
+- LIME feature importance
+- Human-readable threat explanations
 
-### Frontend
+The model currently identifies attack categories including:
 
-- React + Vite
-- Login and Register pages
-- Axios interceptors for authentication
-- Protected dashboard route
+- SQL Injection
+- XSS
+- Path Traversal
+- Command Injection
+- Normal requests
+
+Requests classified as malicious above the configured confidence threshold can be blocked before reaching application routes.
 
 ---
 
-## Tech Stack
+## Authentication
 
-### Frontend
-- React
-- Vite
-- Axios
-- React Router
+The backend includes JWT-based authentication with:
 
-### Backend
-- Node.js
-- Express.js
-- MongoDB
-- Mongoose
-- JWT
+- User registration
+- User login
+- JWT access tokens
+- Refresh tokens
+- Protected API routes
+- Automatic token refresh
+- Password hashing with bcrypt
+- Token validation
+- Token rotation
+- Logout and token invalidation
 
-### Deployment
-- Vercel (Frontend)
-- Render (Backend)
-- MongoDB Atlas (Database)
+---
+
+## Security Controls
+
+### Rate Limiting
+
+Requests are limited per IP address using `express-rate-limit`.
+
+When the configured request threshold is exceeded, the source IP can be temporarily added to the dynamic block list.
+
+### Dynamic IP Blocking
+
+Malicious requests and excessive request activity can result in temporary IP blocking.
+
+Blocked IPs are maintained in memory and automatically expire after the configured duration.
+
+### Request Validation
+
+The WAF can validate:
+
+- HTTP method
+- Content type
+- Request body
+- Query parameters
+- Client headers
+- User-Agent information
+
+### Security Logging
+
+Security events are stored in WAF logs for monitoring and analysis.
+
+Logged events can include:
+
+- Detected attacks
+- Rate-limit violations
+- Blocked IPs
+- Invalid requests
+- WAF errors
+- Authentication-related events
+
+---
+
+## WAF Detection Examples
+
+### SQL Injection
+
+```text
+' OR 1=1 --
+UNION SELECT
+DROP TABLE
+INSERT INTO
+UPDATE users SET
+SELECT * FROM
+```
+
+### XSS
+
+```text
+<script>alert(1)</script>
+<img src=x onerror=alert(1)>
+javascript:
+<iframe>
+```
+
+### Path Traversal
+
+```text
+../../../../etc/passwd
+..%2F..%2F..%2Fetc%2Fpasswd
+```
+
+When a malicious request is detected, the API can return a response similar to:
+
+```json
+{
+  "ok": false,
+  "blocked": true,
+  "attackType": "SQL Injection",
+  "confidence": 0.98,
+  "explanation": "Detected SQL injection pattern",
+  "detectionEngine": "AI"
+}
+```
+
+---
+
+## Machine Learning Performance
+
+The current model achieved approximately **99.02% overall accuracy** on the available evaluation data.
+
+| Class | Recall |
+|---|---:|
+| Normal | 100% |
+| SQL Injection | 98% |
+| XSS | 99% |
+| Path Traversal | 91% |
+| Command Injection | 62% |
+
+The lower performance for Path Traversal and Command Injection is primarily related to the limited number of available training samples for those classes.
+
+---
+
+## Explainability
+
+The prediction itself is generated by the machine-learning model using:
+
+```text
+TF-IDF → Logistic Regression → Attack Prediction
+```
+
+LIME is then used to identify important features contributing to the prediction.
+
+Those features are converted into a readable explanation so that the detected threat can be easier to understand.
+
+> The explanation is not generated by a separate generative AI model. It is based on the model prediction and LIME feature importance.
 
 ---
 
@@ -103,60 +234,304 @@ MongoDB Atlas
 
 ### Authentication
 
+```http
 POST /api/auth/register
 POST /api/auth/login
-POST /api/auth/logout
-POST /api/auth/refresh
-
+GET  /api/auth/refresh
+DELETE /api/auth/logout
+```
 
 ### User
 
+```http
 GET /api/users/me
+```
 
+### Security Monitoring
+
+```http
+GET /api/security/logs
+```
 
 ### Health Check
 
+```http
 GET /health
+```
 
 ---
 
-## WAF Protection Examples
+## Tech Stack
 
-### SQL Injection
+### Frontend
 
-' OR 1=1 --
-UNION SELECT
-DROP TABLE
+- React
+- Vite
+- JavaScript
+- React Router
+- Axios
+- React Hook Form
+- Tailwind CSS
+
+### Backend
+
+- Node.js
+- Express.js
+- MongoDB
+- Mongoose
+- JWT
+- bcrypt
+- Helmet
+- CORS
+- Express Rate Limit
+
+### Machine Learning
+
+- Python
+- Scikit-learn
+- TF-IDF
+- Logistic Regression
+- LIME
+
+### Deployment
+
+- Vercel — Frontend
+- Render — Backend
+- MongoDB Atlas — Database
+
 ---
 
-### XSS
+## Project Structure
 
-<script> onerror= javascript:
+```text
+WAF+JWT/
+│
+├── Backend/
+│   ├── Controllers/
+│   ├── Middleware/
+│   │   ├── WAF.js
+│   │   └── authMiddle.js
+│   ├── Routes/
+│   ├── Validation/
+│   ├── models/
+│   ├── logs/
+│   ├── server.js
+│   └── package.json
+│
+├── Frontend/
+│   ├── src/
+│   │   ├── Pages/
+│   │   ├── Assets/
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   ├── public/
+│   ├── package.json
+│   └── vite.config.js
+│
+└── ML/
+    ├── predict.py
+    ├── predict_explain.py
+    └── datasets/
+```
+
 ---
-### Path Traversal
-  
-../ %2E%2E
-  ---
-When detected, the request is blocked:
-{ "ok": false, "reason": "malicious_payload" }
---- ## Local Setup Clone the repository
+
+## Local Setup
+
+### 1. Clone the repository
+
+```bash
 git clone https://github.com/Developer-Sohail786/WAF-JWT.git
-Install backend dependencies
-cd Backend npm install
-Install frontend dependencies
-cd Frontend npm install
-Create backend `.env`
-MONGO_URL=your_mongodb_uri 
-ACCESS_TOKEN_SECRET=your_secret 
-REFRESH_TOKEN_SECRET=your_secret 
-ACCESS_TOKEN_EXPIRY=1d 
-REFRESH_TOKEN_EXPIRY=7d 
+cd WAF-JWT
+```
+
+### 2. Install backend dependencies
+
+```bash
+cd Backend
+npm install
+```
+
+### 3. Configure backend environment variables
+
+Create a `.env` file inside the `Backend` directory:
+
+```env
+MONGO_URL=your_mongodb_uri
+
+ACCESS_TOKEN_SECRET=your_access_token_secret
+REFRESH_TOKEN_SECRET=your_refresh_token_secret
+
+ACCESS_TOKEN_EXPIRY=1d
+REFRESH_TOKEN_EXPIRY=7d
+
 WAF_ENABLED=true
-  
-Run backend
+```
+
+Never commit real credentials or secrets to GitHub.
+
+### 4. Start the backend
+
+```bash
 npm start
-Run frontend
+```
+
+The backend runs on:
+
+```text
+http://localhost:5000
+```
+
+### 5. Install frontend dependencies
+
+Open another terminal:
+
+```bash
+cd Frontend
+npm install
+```
+
+### 6. Start the frontend
+
+```bash
 npm run dev
+```
+
+The frontend will be available through the Vite development server.
+
+---
+
+## Testing the WAF
+
+You can test the WAF using tools such as Postman or curl.
+
+Example SQL Injection payload:
+
+```json
+{
+  "email": "' OR 1=1 --"
+}
+```
+
+Example XSS payload:
+
+```json
+{
+  "name": "<script>alert(1)</script>"
+}
+```
+
+Example Path Traversal payload:
+
+```text
+../../../../etc/passwd
+```
+
+The WAF analyzes the request and can block the request when the configured detection conditions are met.
+
+---
+
+## Security Flow
+
+```text
+Incoming Request
+       │
+       ▼
+IP Block Check
+       │
+       ▼
+Request Validation
+       │
+       ▼
+Payload Extraction
+       │
+       ▼
+ML Threat Detection
+       │
+       ├── Normal ──────────────┐
+       │                        │
+       └── Malicious            │
+              │                 │
+              ▼                 │
+        Confidence Check        │
+              │                 │
+              ▼                 │
+       Block + Log Request      │
+                                │
+                                ▼
+                         Rate Limiter
+                                │
+                                ▼
+                       JWT Authentication
+                                │
+                                ▼
+                         Application Route
+```
+
+---
+
+## Known Limitations
+
+- Path Traversal training data is limited.
+- Command Injection training data is limited.
+- LIME explanations are simplified.
+- The ML model currently focuses on textual request payload analysis.
+- Dynamic IP blocking currently uses in-memory storage.
+- The ML prediction pipeline depends on the Python runtime being available to the backend environment.
+
+---
+
+## Future Improvements
+
+- Expand training datasets for underrepresented attack categories.
+- Add additional attack classifications.
+- Experiment with deep-learning-based detection models.
+- Integrate real-time threat intelligence feeds.
+- Implement automated WAF rule generation.
+- Improve explainability of ML predictions.
+- Move dynamic blocklists to persistent distributed storage.
+- Add more comprehensive automated security testing.
+- Improve production-scale monitoring and observability.
+
+---
+
+## Why I Built This
+
+I built this project to understand how security mechanisms operate at the application and HTTP request levels rather than relying only on existing security middleware.
+
+The project allowed me to work with:
+
+- Web Application Firewall design
+- HTTP request inspection
+- Authentication and authorization
+- Machine learning for security
+- Explainable machine learning
+- Rate limiting
+- IP blocking
+- Security logging
+- API security
+- Full-stack application architecture
+- Production deployment
+
+---
+
+## Author
+
+**Sohail Khan**
+
+Full-Stack Developer focused on Next.js, TypeScript, React, Node.js, backend development, AI integration, and application security.
+
+### Connect
+
+- GitHub: https://github.com/Developer-Sohail786
+- LinkedIn: https://www.linkedin.com/in/sohailkhan-dev/
+- Portfolio: https://portfolio-website1-virid.vercel.app
+
+---
+
+## License
+
+This project is intended for educational and development purposes.
 
 ---
 
